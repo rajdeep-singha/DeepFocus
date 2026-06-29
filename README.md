@@ -152,20 +152,6 @@ Not needed at Vercel deploy time — only for local CLI use.
 
 ---
 
-## Deployment
-
-Deployed via Vercel. `vercel.json` handles the build and SPA rewrites automatically.
-
-| Setting | Value |
-|---|---|
-| Build command | `npm run build` |
-| Output directory | `web/dist` |
-| Install command | `npm install && cd web && npm install` |
-
-Push to `main` → Vercel redeploys automatically.
-
----
-
 ## License
 
 MIT — see [LICENSE](./LICENSE).
