@@ -30,12 +30,11 @@ export default function Landing() {
         {/* Navigation */}
         <nav className="w-full max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
           {/* Logo */}
-          <span
-            className="text-3xl tracking-tight text-white select-none"
-            style={{ fontFamily: "'Instrument Serif', serif" }}
-          >
-            DeepFocus<sup className="text-xs align-super ml-0.5">®</sup>
-          </span>
+          <span className="text-3xl tracking-tight text-white select-none"
+           style={{ fontFamily: "'Instrument Serif', serif" }}                              
+               >                                                                                  
+                 DeepFocus<sup className="text-xs align-super ml-0.5">®</sup>                     
+               </span> 
 
           {/* Nav links — desktop */}
           <div className="hidden md:flex items-center gap-8">
