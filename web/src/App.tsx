@@ -13,7 +13,7 @@ function WithNav({ children }: { children: React.ReactNode }) {
         <span className="text-zinc-600">DeepFocus</span>
         <span className="mx-2 text-stone-300">·</span>
         <a
-          href="https://github.com/issues/new"
+          href="https://github.com/rajdeep-singha/DeepFocus/blob/main/.github/ISSUE_TEMPLATE/content-request.md"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-zinc-600 transition-colors"

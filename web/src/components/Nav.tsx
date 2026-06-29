@@ -13,7 +13,7 @@ export default function Nav() {
         <nav className="flex items-center gap-6 text-sm text-zinc-500">
           <Link to="/browse" className="hover:text-zinc-700 transition-colors">browse</Link>
           <a
-            href="https://github.com/issues/new"
+            href="https://github.com/rajdeep-singha/DeepFocus/blob/main/.github/ISSUE_TEMPLATE/content-request.md"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-zinc-700 transition-colors"
