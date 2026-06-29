@@ -2,9 +2,11 @@
 /**
  * generate-gists.ts
  * Usage: npm run gists -- content/articles/my-article.qmd
+ *        npm run gists -- content/videos/my-video.qmd
  *
- * Reads a .qmd file, sends the body to Claude API,
- * and injects 3 gist summaries into the frontmatter.
+ * Reads a .qmd file and injects AI-generated gists into the frontmatter.
+ * - Articles / blogs / research → quick, medium, full
+ * - Videos → short, long (fetches transcript if source_url is present)
  * Requires: ANTHROPIC_API_KEY env variable
  */
 
@@ -35,9 +37,60 @@ if (!apiKey) {
 
 const client = new Anthropic({ apiKey })
 
-async function generateGists(title: string, body: string) {
-  console.log(`Generating gists for: "${title}"`)
-  console.log('Calling Claude API (single call for all 3 levels)...')
+function extractVideoId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/\s]{11})/)
+  return m?.[1] ?? null
+}
+
+async function fetchTranscript(videoId: string): Promise<string | null> {
+  try {
+    const { YoutubeTranscript } = await import('youtube-transcript')
+    const transcript = await YoutubeTranscript.fetchTranscript(videoId)
+    return transcript.map((t: { text: string }) => t.text).join(' ').slice(0, 10000)
+  } catch {
+    console.log('  Transcript not available — will use title/description only.')
+    return null
+  }
+}
+
+async function generateVideoGists(title: string, author: string, transcript: string | null) {
+  console.log('Calling Claude API (short + long gists)...')
+
+  const contentSection = transcript
+    ? `Transcript (first 10000 chars):\n${transcript}`
+    : `No transcript available. Base analysis on the title and author.`
+
+  const prompt = `Analyze this YouTube video for a content platform.
+
+Title: "${title}"
+Channel: "${author}"
+${contentSection}
+
+Return ONLY valid JSON with this exact structure:
+{
+  "short": "<~150 word takeaway — single paragraph, the single most important insight>",
+  "long": "<complete explanation of the entire video content — cover every major point, argument, example, and conclusion the speaker makes. Use \\n\\n between paragraphs. Aim for thoroughness over brevity.>"
+}
+
+Return only the JSON, no other text.`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('Claude did not return valid JSON')
+
+  const gists = JSON.parse(jsonMatch[0]) as { short: string; long: string }
+  if (!gists.short || !gists.long) throw new Error('Missing gist fields in Claude response')
+  return gists
+}
+
+async function generateTextGists(title: string, body: string) {
+  console.log('Calling Claude API (quick + medium + full gists)...')
 
   const prompt = `You are summarizing a piece of writing titled "${title}" for a content platform.
 
@@ -62,19 +115,11 @@ Return only the JSON object, no other text.`
   })
 
   const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
-
-  // Extract JSON from response
   const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) {
-    throw new Error('Claude did not return valid JSON')
-  }
+  if (!jsonMatch) throw new Error('Claude did not return valid JSON')
 
   const gists = JSON.parse(jsonMatch[0]) as { quick: string; medium: string; full: string }
-
-  if (!gists.quick || !gists.medium || !gists.full) {
-    throw new Error('Missing gist fields in Claude response')
-  }
-
+  if (!gists.quick || !gists.medium || !gists.full) throw new Error('Missing gist fields in Claude response')
   return gists
 }
 
@@ -83,19 +128,44 @@ async function main() {
   const { data, content } = matter(raw)
 
   const title = (data['title'] as string) ?? path.basename(absPath, '.qmd')
-  const gists = await generateGists(title, content)
+  const contentType = data['type'] as string | undefined
 
-  // Inject gists into frontmatter
-  data['gists'] = gists
+  if (contentType === 'video') {
+    const author = (data['author'] as string) ?? ''
+    const sourceUrl = (data['source_url'] as string) ?? ''
+    const videoId = extractVideoId(sourceUrl)
 
-  // Reconstruct the file with updated frontmatter
-  const updated = matter.stringify(content, data)
-  fs.writeFileSync(absPath, updated, 'utf-8')
+    let transcript: string | null = null
+    if (videoId) {
+      console.log(`  Fetching transcript for video ID: ${videoId}`)
+      transcript = await fetchTranscript(videoId)
+      if (transcript) console.log(`  Transcript: ${transcript.length} chars`)
+    }
 
-  console.log('Gists written to frontmatter:')
-  console.log(`  quick: ${gists.quick.slice(0, 80)}...`)
-  console.log(`  medium: ${gists.medium.slice(0, 80)}...`)
-  console.log(`  full: ${gists.full.slice(0, 80)}...`)
+    console.log(`Generating video gists for: "${title}"`)
+    const gists = await generateVideoGists(title, author, transcript)
+    data['gists'] = gists
+
+    const updated = matter.stringify(content, data)
+    fs.writeFileSync(absPath, updated, 'utf-8')
+
+    console.log('Gists written to frontmatter:')
+    console.log(`  short: ${gists.short.slice(0, 80)}...`)
+    console.log(`  long: ${gists.long.slice(0, 80)}...`)
+  } else {
+    console.log(`Generating gists for: "${title}"`)
+    const gists = await generateTextGists(title, content)
+    data['gists'] = gists
+
+    const updated = matter.stringify(content, data)
+    fs.writeFileSync(absPath, updated, 'utf-8')
+
+    console.log('Gists written to frontmatter:')
+    console.log(`  quick: ${gists.quick.slice(0, 80)}...`)
+    console.log(`  medium: ${gists.medium.slice(0, 80)}...`)
+    console.log(`  full: ${gists.full.slice(0, 80)}...`)
+  }
+
   console.log(`\nUpdated: ${absPath}`)
 }
 

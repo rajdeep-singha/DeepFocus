@@ -94,9 +94,8 @@ interface ClaudeVideoAnalysis {
   tags: string[]
   estimated_read_time: number
   gists: {
-    quick: string
-    medium: string
-    full: string
+    short: string
+    long: string
   }
   description: string
 }
@@ -123,9 +122,8 @@ Return ONLY valid JSON with this exact structure:
   "estimated_read_time": <number 1-15, minutes to watch/engage>,
   "description": "<one sentence description for the .qmd body>",
   "gists": {
-    "quick": "<~150 word takeaway — single paragraph>",
-    "medium": "<~600 word summary — key points, use \\n\\n between paragraphs>",
-    "full": "<~1500 word comprehensive overview, use \\n\\n between paragraphs>"
+    "short": "<~150 word takeaway — single paragraph, the single most important insight>",
+    "long": "<complete explanation of the entire video content — cover every major point, argument, example, and conclusion the speaker makes. Use \\n\\n between paragraphs. Aim for thoroughness over brevity.>"
   }
 }
 

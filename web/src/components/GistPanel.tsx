@@ -5,23 +5,28 @@ interface GistPanelProps {
   gists: Gists
 }
 
-const TABS = [
-  { key: 'quick' as const, label: ' 1 min', desc: 'Quick takeaway' },
-  { key: 'medium' as const, label: ' 5 min', desc: 'Key points' },
-  { key: 'full' as const, label: ' 10 min', desc: 'Full overview' },
-]
+const ALL_TABS = [
+  { key: 'short' as const, label: 'Short', desc: 'Quick overview' },
+  { key: 'quick' as const, label: '1 min', desc: 'Quick takeaway' },
+  { key: 'medium' as const, label: '5 min', desc: 'Key points' },
+  { key: 'full' as const, label: '10 min', desc: 'Full overview' },
+  { key: 'long' as const, label: 'Full', desc: 'Complete content' },
+] as const
+
+type GistKey = keyof Gists
 
 export default function GistPanel({ gists }: GistPanelProps) {
-  const [active, setActive] = useState<'quick' | 'medium' | 'full' | null>(null)
+  const tabs = ALL_TABS.filter((t) => gists[t.key as GistKey])
+  const [active, setActive] = useState<GistKey | null>(null)
 
   return (
     <div className="border border-stone-200 rounded-xl overflow-hidden mb-8">
       <div className="flex border-b border-stone-200 bg-stone-50">
         <div className="flex-1 flex">
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActive(active === tab.key ? null : tab.key)}
+              onClick={() => setActive(active === tab.key ? null : (tab.key as GistKey))}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors text-left sm:text-center ${
                 active === tab.key
                   ? 'bg-violet-50 text-violet-600 border-b-2 border-violet-500'
@@ -48,7 +53,7 @@ export default function GistPanel({ gists }: GistPanelProps) {
         <div className="p-5 bg-stone-50/60">
           <div
             className="prose-content text-sm"
-            dangerouslySetInnerHTML={{ __html: gists[active] }}
+            dangerouslySetInnerHTML={{ __html: gists[active] ?? '' }}
           />
         </div>
       ) : (

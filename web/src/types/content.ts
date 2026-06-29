@@ -1,9 +1,13 @@
 export type ContentType = 'article' | 'blog' | 'research' | 'video'
 
 export interface Gists {
-  quick: string   // rendered HTML
-  medium: string  // rendered HTML
-  full: string    // rendered HTML
+  // Articles, blogs, research
+  quick?: string
+  medium?: string
+  full?: string
+  // Videos
+  short?: string
+  long?: string
 }
 
 export interface ContentMeta {

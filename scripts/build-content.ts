@@ -31,9 +31,11 @@ interface ContentMeta {
   is_own_work: boolean
   excerpt: string
   gists?: {
-    quick: string
-    medium: string
-    full: string
+    quick?: string
+    medium?: string
+    full?: string
+    short?: string
+    long?: string
   }
 }
 
@@ -96,14 +98,16 @@ async function processFile(filePath: string): Promise<{ meta: ContentMeta; item:
   const readTime = (data['estimated_read_time'] as number) ?? estimateReadTime(content)
 
   // Render gists from markdown → HTML (they may contain **bold**, ## headings, etc.)
-  const rawGists = data['gists'] as { quick: string; medium: string; full: string } | undefined
-  let renderedGists: { quick: string; medium: string; full: string } | undefined
+  type RawGists = { quick?: string; medium?: string; full?: string; short?: string; long?: string }
+  const rawGists = data['gists'] as RawGists | undefined
+  let renderedGists: RawGists | undefined
   if (rawGists) {
-    renderedGists = {
-      quick: await marked(rawGists.quick ?? ''),
-      medium: await marked(rawGists.medium ?? ''),
-      full: await marked(rawGists.full ?? ''),
-    }
+    renderedGists = {}
+    if (rawGists.quick) renderedGists.quick = await marked(rawGists.quick)
+    if (rawGists.medium) renderedGists.medium = await marked(rawGists.medium)
+    if (rawGists.full) renderedGists.full = await marked(rawGists.full)
+    if (rawGists.short) renderedGists.short = await marked(rawGists.short)
+    if (rawGists.long) renderedGists.long = await marked(rawGists.long)
   }
 
   const meta: ContentMeta = {
