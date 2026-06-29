@@ -1,0 +1,9 @@
+node_modules/
+web/node_modules/
+web/dist/
+dist-cli/
+public/content-index.json
+public/content/
+.env
+.env.local
+*.DS_Store

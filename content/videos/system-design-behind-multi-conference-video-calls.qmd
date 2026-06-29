@@ -1,0 +1,15 @@
+---
+title: "System Design Behind Multi-Conference Video Calls - WebRTC vs SFU vs MCU"
+author: "Piyush Garg"
+author_url: "https://www.youtube.com/@piyushgargdev"
+date: 2026-06-29
+type: video
+category: "System Design"
+tags: [webrtc, system-design, sfu, mcu, video-streaming, networking]
+video_url: "https://www.youtube.com/embed/Zaz6hYVm-WE"
+source_url: "https://www.youtube.com/watch?v=Zaz6hYVm-WE"
+estimated_read_time: 15
+is_own_work: false
+---
+
+A deep dive into how multi-party video conferencing systems like Zoom, Google Meet, and Discord are architected under the hood. Piyush Garg explains the three core approaches — WebRTC peer-to-peer, SFU (Selective Forwarding Unit), and MCU (Multipoint Control Unit) — and the trade-offs between them at scale.
