@@ -1,10 +1,4 @@
-/**
- * build-content.ts
- * Reads all .qmd files from content/, parses frontmatter + body,
- * renders markdown to HTML, and outputs:
- *   public/content-index.json   — all items metadata (for listing pages)
- *   public/content/{slug}.json  — individual item with rendered HTML body
- */
+
 
 import fs from 'fs'
 import path from 'path'
