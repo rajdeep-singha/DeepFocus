@@ -13,6 +13,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import Anthropic from '@anthropic-ai/sdk'
 import slugify from 'slugify'
+import 'dotenv/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -77,27 +78,57 @@ async function fetchYouTubeMeta(videoId: string): Promise<YouTubeMeta> {
   }
 }
 
+interface TranscriptSegment {
+  text: string
+  offset: number
+  duration: number
+}
+
+function formatTimestamp(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000)
+  const mins = Math.floor(totalSeconds / 60)
+  const secs = totalSeconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
 async function fetchTranscript(videoId: string): Promise<string | null> {
   try {
     // Dynamic import to handle ESM
     const { YoutubeTranscript } = await import('youtube-transcript')
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId)
-    return transcript.map((t: { text: string }) => t.text).join(' ').slice(0, 10000)
+    const segments = await YoutubeTranscript.fetchTranscript(videoId) as TranscriptSegment[]
+    // Keep timestamps for chapter/quote extraction
+    return segments
+      .map((t) => `[${formatTimestamp(t.offset)}] ${t.text}`)
+      .join('\n')
+      .slice(0, 14000)
   } catch {
     console.log('  Transcript not available — will use title/description only.')
     return null
   }
 }
 
+interface Chapter {
+  timestamp: string
+  title: string
+  summary: string
+}
+
+interface Quote {
+  text: string
+  timestamp: string
+}
+
 interface ClaudeVideoAnalysis {
   category: string
   tags: string[]
   estimated_read_time: number
+  description: string
   gists: {
     short: string
     long: string
+    chapters: Chapter[]
+    quotes: Quote[]
   }
-  description: string
 }
 
 async function analyzeVideo(
@@ -123,9 +154,25 @@ Return ONLY valid JSON with this exact structure:
   "description": "<one sentence description for the .qmd body>",
   "gists": {
     "short": "<~150 word takeaway — single paragraph, the single most important insight>",
-    "long": "<complete explanation of the entire video content — cover every major point, argument, example, and conclusion the speaker makes. Use \\n\\n between paragraphs. Aim for thoroughness over brevity.>"
+    "long": "<complete explanation of the entire video content — cover every major point, argument, example, and conclusion the speaker makes. Use \\n\\n between paragraphs. Aim for thoroughness over brevity.>",
+    "chapters": [
+      {
+        "timestamp": "<MM:SS from transcript>",
+        "title": "<chapter title, 3-7 words>",
+        "summary": "<2-3 sentence summary of what is covered in this chapter>"
+      }
+    ],
+    "quotes": [
+      {
+        "text": "<exact or near-exact quote from the speaker — something insightful or memorable>",
+        "timestamp": "<MM:SS where this was said>"
+      }
+    ]
   }
 }
+
+For chapters: identify 4-8 natural topic shifts in the video using the timestamps in the transcript. Each chapter should cover a distinct concept or section.
+For quotes: pick 3-5 of the most insightful, quotable lines the speaker actually said.
 
 Return only the JSON, no other text.`
 
@@ -148,40 +195,56 @@ function buildQmdContent(
   analysis: ClaudeVideoAnalysis,
 ): string {
   const today = new Date().toISOString().slice(0, 10)
-  const frontmatter = {
-    title: meta.title,
-    author: meta.author,
-    author_url: meta.authorUrl,
-    date: today,
-    type: 'video',
-    category: analysis.category,
-    tags: analysis.tags,
-    video_url: toEmbedUrl(videoId),
-    source_url: toWatchUrl(videoId),
-    estimated_read_time: analysis.estimated_read_time,
-    is_own_work: false,
-    gists: analysis.gists,
-  }
 
+  // Frontmatter — only scalar/array fields; structured content goes in the body
   const lines = ['---']
-  for (const [k, v] of Object.entries(frontmatter)) {
-    if (Array.isArray(v)) {
-      lines.push(`${k}: [${v.map((t) => `"${t}"`).join(', ')}]`)
-    } else if (typeof v === 'object' && v !== null) {
-      lines.push(`${k}:`)
-      for (const [gk, gv] of Object.entries(v as Record<string, string>)) {
-        // Multi-line gists: use yaml block scalar
-        const escaped = String(gv).replace(/"/g, '\\"')
-        lines.push(`  ${gk}: "${escaped}"`)
-      }
-    } else {
-      lines.push(`${k}: ${JSON.stringify(v)}`)
-    }
-  }
+  lines.push(`title: ${JSON.stringify(meta.title)}`)
+  lines.push(`author: ${JSON.stringify(meta.author)}`)
+  lines.push(`author_url: ${JSON.stringify(meta.authorUrl)}`)
+  lines.push(`date: ${today}`)
+  lines.push(`type: "video"`)
+  lines.push(`category: ${JSON.stringify(analysis.category)}`)
+  lines.push(`tags: [${analysis.tags.map((t) => `"${t}"`).join(', ')}]`)
+  lines.push(`video_url: ${JSON.stringify(toEmbedUrl(videoId))}`)
+  lines.push(`source_url: ${JSON.stringify(toWatchUrl(videoId))}`)
+  lines.push(`estimated_read_time: ${analysis.estimated_read_time}`)
+  lines.push(`is_own_work: false`)
+  lines.push(`gists:`)
+  lines.push(`  short: ${JSON.stringify(analysis.gists.short)}`)
+  lines.push(`  long: ${JSON.stringify(analysis.gists.long)}`)
   lines.push('---')
   lines.push('')
+
+  // Description
   lines.push(analysis.description)
   lines.push('')
+
+  // Full explanation
+  lines.push('## Overview')
+  lines.push('')
+  lines.push(analysis.gists.long.replace(/\\n\\n/g, '\n\n'))
+  lines.push('')
+
+  // Chapters
+  lines.push('## Chapters')
+  lines.push('')
+  for (const chapter of analysis.gists.chapters) {
+    lines.push(`### \`${chapter.timestamp}\` — ${chapter.title}`)
+    lines.push('')
+    lines.push(chapter.summary)
+    lines.push('')
+  }
+
+  // Quotes
+  if (analysis.gists.quotes.length > 0) {
+    lines.push('## Notable Quotes')
+    lines.push('')
+    for (const quote of analysis.gists.quotes) {
+      lines.push(`> "${quote.text}"`)
+      lines.push(`> — \`${quote.timestamp}\``)
+      lines.push('')
+    }
+  }
 
   return lines.join('\n')
 }
