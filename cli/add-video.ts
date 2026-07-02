@@ -100,7 +100,7 @@ async function fetchTranscript(videoId: string): Promise<string | null> {
     return segments
       .map((t) => `[${formatTimestamp(t.offset)}] ${t.text}`)
       .join('\n')
-      .slice(0, 14000)
+      .slice(0, 80000)
   } catch {
     console.log('  Transcript not available — will use title/description only.')
     return null
@@ -137,7 +137,7 @@ async function analyzeVideo(
   transcript: string | null
 ): Promise<ClaudeVideoAnalysis> {
   const contentSection = transcript
-    ? `Transcript (first 10000 chars):\n${transcript}`
+    ? `Transcript:\n${transcript}`
     : `No transcript available. Base analysis on the title and author.`
 
   const prompt = `Analyze this YouTube video for a content platform.
@@ -178,7 +178,7 @@ Return only the JSON, no other text.`
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 4096,
+    max_tokens: 8192,
     messages: [{ role: 'user', content: prompt }],
   })
 
