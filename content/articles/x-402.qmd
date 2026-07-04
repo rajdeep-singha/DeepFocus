@@ -145,6 +145,8 @@ A more grounded statement would be:
 
 History is filled with elegant standards that never achieved network effects.
 
+![WLegacy SaaS APIs vs x402 Agentic Protocol](/images/x402/i2.jpeg)
+
 ---
 
 # The Dark Forest of DeFi
@@ -185,6 +187,8 @@ They need a deterministic, machine-readable risk signal before spending a single
 The dark forest doesn't care how well your agent is written.
 
 It only cares whether you checked before you transacted.
+
+![WLegacy SaaS APIs vs x402 Agentic Protocol](/images/x402/i3.png)
 
 ---
 
@@ -230,6 +234,8 @@ The Oracle operates 24/7 and charges only when queried.
 ## Counterparty Trust Score
 
 **Table 2**
+![WLegacy SaaS APIs vs x402 Agentic Protocol](/images/x402/i4.png)
+
 
 ---
 
@@ -294,6 +300,7 @@ The entire flow completes in seconds.
 According to Coinbase CEO Brian Armstrong, x402 facilitated more than **$50 million** in transaction volume within a single 30-day period while still in its early adoption phase.
 
 ---
+![WLegacy SaaS APIs vs x402 Agentic Protocol](/images/x402/i5.jpeg)
 
 # Service Discovery for Autonomous Agents
 
@@ -318,6 +325,7 @@ without human intervention.
 ---
 
 # Ecosystem Momentum
+![WLegacy SaaS APIs vs x402 Agentic Protocol](/images/x402/i6.jpeg)
 
 Several organizations are already supporting the emerging standard.
 
