@@ -10,7 +10,7 @@ is_own_work: true
 
 ---
 
-# Building an x402-Gated Counterparty Trust Oracle on Solana with Covalent
+![WLegacy SaaS APIs vs x402 Agentic Protocol](/images/x402/i7.jpeg)
 
 In DeFi, you never know if the wallet on the other side of your trade is a person, a bot, or a trap.
 
