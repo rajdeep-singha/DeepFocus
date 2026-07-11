@@ -1,16 +1,3 @@
-/**
- * llm.ts
- * Shared LLM helper for the CLI tools. Wraps a single "prompt in → text out"
- * call so each script stays provider-agnostic.
- *
- * Providers:
- *   - claude (default) → @anthropic-ai/sdk, needs ANTHROPIC_API_KEY
- *   - gemini           → @google/genai,     needs GEMINI_API_KEY
- *
- * Pick a provider per run with the `--gemini` / `--claude` flag, or globally
- * with LLM_PROVIDER=gemini in the environment. Claude stays the default.
- */
-
 import Anthropic from '@anthropic-ai/sdk'
 import 'dotenv/config'
 

@@ -1,17 +1,3 @@
-#!/usr/bin/env tsx
-/**
- * generate-gists.ts
- * Usage: npm run gists -- content/articles/my-article.qmd
- *        npm run gists -- content/videos/my-video.qmd
- *
- * Reads a .qmd file and injects AI-generated gists into the frontmatter.
- * - Articles / blogs / research → quick, medium, full
- * - Videos → short, long (fetches transcript if source_url is present)
- *
- * Uses Claude by default. Pass --gemini (or set LLM_PROVIDER=gemini) to use
- * Gemini Flash instead. Requires ANTHROPIC_API_KEY or GEMINI_API_KEY.
- */
-
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'

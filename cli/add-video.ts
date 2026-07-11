@@ -1,15 +1,4 @@
-#!/usr/bin/env tsx
-/**
- * add-video.ts
- * Usage: npm run video -- https://www.youtube.com/watch?v=VIDEO_ID
- *
- * Fetches YouTube metadata + transcript (free, no API key),
- * then uses a single LLM call to generate tags, category, and gists.
- * Creates content/videos/{slug}.qmd
- *
- * Uses Claude by default. Pass --gemini (or set LLM_PROVIDER=gemini) to use
- * Gemini Flash instead.
- */
+
 
 import fs from 'fs'
 import path from 'path'
