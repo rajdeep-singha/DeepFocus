@@ -4,15 +4,18 @@
  * Usage: npm run add-external -- https://example.com/some-article
  *        npm run add-external -- --type research https://arxiv.org/abs/...
  *
- * Fetches the URL, extracts text content, then uses a single Claude call
+ * Fetches the URL, extracts text content, then uses a single LLM call
  * to extract metadata + generate gists. Creates a .qmd in content/{type}/.
+ *
+ * Uses Claude by default. Pass --gemini (or set LLM_PROVIDER=gemini) to use
+ * Gemini Flash instead.
  */
 
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import Anthropic from '@anthropic-ai/sdk'
 import slugify from 'slugify'
+import { generateText, resolveProvider } from './llm.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -32,17 +35,9 @@ for (let i = 0; i < args.length; i++) {
 }
 
 if (!inputUrl) {
-  console.error('Usage: npm run add-external -- [--type article|blog|research] <URL>')
+  console.error('Usage: npm run add-external -- [--gemini] [--type article|blog|research] <URL>')
   process.exit(1)
 }
-
-const apiKey = process.env['ANTHROPIC_API_KEY']
-if (!apiKey) {
-  console.error('ANTHROPIC_API_KEY is not set')
-  process.exit(1)
-}
-
-const client = new Anthropic({ apiKey })
 
 async function fetchPageContent(url: string): Promise<{ text: string; html: string }> {
   const res = await fetch(url, {
@@ -119,15 +114,9 @@ Return ONLY valid JSON with this exact structure:
 
 Return only the JSON object, no other text.`
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 6000,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
+  const text = await generateText(prompt, { maxTokens: 6000 })
   const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Claude did not return valid JSON')
+  if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
   return JSON.parse(jsonMatch[0]) as ClaudeArticleAnalysis
 }
@@ -166,7 +155,7 @@ async function main() {
   const { text } = await fetchPageContent(inputUrl!)
   console.log(`  Extracted: ${text.length} chars`)
 
-  console.log('  Calling Claude API (title + author + type + tags + gists in one call)...')
+  console.log(`  Calling ${resolveProvider()} (title + author + type + tags + gists in one call)...`)
   const analysis = await analyzeContent(inputUrl!, text)
 
   const contentType = typeOverride ?? analysis.type

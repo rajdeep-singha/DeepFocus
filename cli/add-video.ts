@@ -4,35 +4,29 @@
  * Usage: npm run video -- https://www.youtube.com/watch?v=VIDEO_ID
  *
  * Fetches YouTube metadata + transcript (free, no API key),
- * then uses a single Claude call to generate tags, category, and gists.
+ * then uses a single LLM call to generate tags, category, and gists.
  * Creates content/videos/{slug}.qmd
+ *
+ * Uses Claude by default. Pass --gemini (or set LLM_PROVIDER=gemini) to use
+ * Gemini Flash instead.
  */
 
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import Anthropic from '@anthropic-ai/sdk'
 import slugify from 'slugify'
-import 'dotenv/config'
+import { generateText, resolveProvider } from './llm.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const VIDEOS_DIR = path.join(ROOT, 'content', 'videos')
 
-const inputUrl = process.argv[2]
+const inputUrl = process.argv.slice(2).find((a) => !a.startsWith('--'))
 
 if (!inputUrl) {
-  console.error('Usage: npm run video -- <YouTube URL>')
+  console.error('Usage: npm run video -- [--gemini] <YouTube URL>')
   process.exit(1)
 }
-
-const apiKey = process.env['ANTHROPIC_API_KEY']
-if (!apiKey) {
-  console.error('ANTHROPIC_API_KEY is not set')
-  process.exit(1)
-}
-
-const client = new Anthropic({ apiKey })
 
 function extractVideoId(url: string): string | null {
   const patterns = [
@@ -176,15 +170,9 @@ For quotes: pick 3-5 of the most insightful, quotable lines the speaker actually
 
 Return only the JSON, no other text.`
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 8192,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
+  const text = await generateText(prompt, { maxTokens: 8192 })
   const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Claude did not return valid JSON')
+  if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
   return JSON.parse(jsonMatch[0]) as ClaudeVideoAnalysis
 }
@@ -253,7 +241,7 @@ async function main() {
   console.log(`Processing: ${inputUrl}`)
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const videoId = extractVideoId(inputUrl)!
+  const videoId = extractVideoId(inputUrl!)!
   if (!videoId) {
     console.error('Could not extract video ID from URL')
     process.exit(1)
@@ -270,7 +258,7 @@ async function main() {
   const transcript = await fetchTranscript(videoId)
   if (transcript) console.log(`  Transcript: ${transcript.length} chars`)
 
-  console.log('  Calling Claude API (category + tags + gists in one call)...')
+  console.log(`  Calling ${resolveProvider()} (category + tags + gists in one call)...`)
   const analysis = await analyzeVideo(meta.title, meta.author, transcript)
 
   const slug = slugify(meta.title, { lower: true, strict: true }).slice(0, 60)

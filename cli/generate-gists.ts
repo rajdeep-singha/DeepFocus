@@ -7,18 +7,20 @@
  * Reads a .qmd file and injects AI-generated gists into the frontmatter.
  * - Articles / blogs / research → quick, medium, full
  * - Videos → short, long (fetches transcript if source_url is present)
- * Requires: ANTHROPIC_API_KEY env variable
+ *
+ * Uses Claude by default. Pass --gemini (or set LLM_PROVIDER=gemini) to use
+ * Gemini Flash instead. Requires ANTHROPIC_API_KEY or GEMINI_API_KEY.
  */
 
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateText, resolveProvider } from './llm.js'
 
-const filePath = process.argv[2]
+const filePath = process.argv.slice(2).find((a) => !a.startsWith('--'))
 
 if (!filePath) {
-  console.error('Usage: npm run gists -- <path-to-file.qmd>')
+  console.error('Usage: npm run gists -- [--gemini] <path-to-file.qmd>')
   process.exit(1)
 }
 
@@ -28,14 +30,6 @@ if (!fs.existsSync(absPath)) {
   console.error(`File not found: ${absPath}`)
   process.exit(1)
 }
-
-const apiKey = process.env['ANTHROPIC_API_KEY']
-if (!apiKey) {
-  console.error('ANTHROPIC_API_KEY is not set')
-  process.exit(1)
-}
-
-const client = new Anthropic({ apiKey })
 
 function extractVideoId(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/\s]{11})/)
@@ -54,7 +48,7 @@ async function fetchTranscript(videoId: string): Promise<string | null> {
 }
 
 async function generateVideoGists(title: string, author: string, transcript: string | null) {
-  console.log('Calling Claude API (short + long gists)...')
+  console.log(`Calling ${resolveProvider()} (short + long gists)...`)
 
   const contentSection = transcript
     ? `Transcript (first 10000 chars):\n${transcript}`
@@ -74,23 +68,17 @@ Return ONLY valid JSON with this exact structure:
 
 Return only the JSON, no other text.`
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
+  const text = await generateText(prompt, { maxTokens: 4096 })
   const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Claude did not return valid JSON')
+  if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
   const gists = JSON.parse(jsonMatch[0]) as { short: string; long: string }
-  if (!gists.short || !gists.long) throw new Error('Missing gist fields in Claude response')
+  if (!gists.short || !gists.long) throw new Error('Missing gist fields in model response')
   return gists
 }
 
 async function generateTextGists(title: string, body: string) {
-  console.log('Calling Claude API (quick + medium + full gists)...')
+  console.log(`Calling ${resolveProvider()} (quick + medium + full gists)...`)
 
   const prompt = `You are summarizing a piece of writing titled "${title}" for a content platform.
 
@@ -108,18 +96,12 @@ ${body.slice(0, 12000)}
 
 Return only the JSON object, no other text.`
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
+  const text = await generateText(prompt, { maxTokens: 4096 })
   const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Claude did not return valid JSON')
+  if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
   const gists = JSON.parse(jsonMatch[0]) as { quick: string; medium: string; full: string }
-  if (!gists.quick || !gists.medium || !gists.full) throw new Error('Missing gist fields in Claude response')
+  if (!gists.quick || !gists.medium || !gists.full) throw new Error('Missing gist fields in model response')
   return gists
 }
 
