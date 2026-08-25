@@ -1,0 +1,74 @@
+---
+title: "Bitcoin, Trump and Hyperliquid ft Matt Hougan, CIO Bitwise"
+author: "Touch Grass Podcast "
+author_url: "https://www.youtube.com/@touchgrass_pod"
+date: 2026-08-25
+type: "video"
+category: "Business"
+tags: ["Cryptocurrency", "Macroeconomics", "DeFi", "Bitwise"]
+video_url: "https://www.youtube.com/embed/nQBe4QWEcCg"
+source_url: "https://www.youtube.com/watch?v=nQBe4QWEcCg"
+estimated_read_time: 8
+is_own_work: false
+gists:
+  short: "The convergence of government fiscal interventions, pro-crypto political messaging, and rapid native infrastructure growth is triggering a massive turning point in the digital asset markets. Bitwise CIO Matt Hougan highlights that while the AI bubble is cooling, capital is rotating back into highly efficient, yield-generating on-chain assets. Platforms like Hyperliquid represent highly asymmetrical 'consensus non-consensus' opportunities—widely celebrated inside crypto circles but entirely unnoticed by traditional finance giants holding trillions of dollars. As on-chain finance, tokenized securities, and regulatory frameworks mature, major asset managers are shifting focus towards native on-chain management to capture the generational wealth transfer and a fully digital global economy."
+  long: "In this episode, Matt Hougan, CIO of Bitwise, discusses the sudden turn in the crypto markets following a sequence of powerful catalysts. He frames the market's recovery as a perfectly laid fire that was just waiting for a spark. Hougan identifies three major triggers: first, the U.S. Treasury's intervention in the long end of the bond market to suppress interest rates, effectively executing a form of quantitative easing that devalues the dollar and strengthens the case for Bitcoin. Second, former President Trump's positive mentions of crypto and the potential to bring platforms like Hyperliquid compliantly into the United States. Third, the SEC signaling a more progressive regulatory pathway for launching new crypto assets.\n\nHougan dives deep into the concept of consensus versus non-consensus investing. While major trends like AI, robotics, and biotech are widely accepted (consensus) areas of growth, crypto remains highly non-consensus among the traditional institutions that control the majority of global capital. He identifies Hyperliquid as a prime example of a 'consensus non-consensus' bet—virtually everyone in the crypto-native space understands its superior user experience and financial efficiency, yet traditional finance allocators have zero exposure or awareness. Bringing Hyperliquid into the U.S. regulatory fold is a multi-year effort requiring CFTC clarity on perpetual futures, but the upside remains massive as perpetual contracts begin to eat the market share of traditional, calendar-dated futures.\n\nThe conversation also covers the rise of tokenized real-world assets (RWAs) and stocks on-chain. Hougan praises Robin Hood's on-chain strategy, noting that its success stemmed from bringing an established brand, an active user base, and a willingness to integrate directly with open DeFi protocols rather than walling off services. Looking forward, Hougan expresses immense optimism for the next two decades of technology, citing advancements in cancer vaccines, robotics, and on-chain finance. He concludes with Bitwise's strategic pivot towards native on-chain asset management, including staking, vaults, and tokenized security products, to meet investors where the financial system is ultimately heading."
+---
+
+Bitwise CIO Matt Hougan explains how recent macroeconomic shifts, political catalysts, and the rise of decentralized platforms like Hyperliquid are driving the next wave of on-chain asset adoption.
+
+## Overview
+
+In this episode, Matt Hougan, CIO of Bitwise, discusses the sudden turn in the crypto markets following a sequence of powerful catalysts. He frames the market's recovery as a perfectly laid fire that was just waiting for a spark. Hougan identifies three major triggers: first, the U.S. Treasury's intervention in the long end of the bond market to suppress interest rates, effectively executing a form of quantitative easing that devalues the dollar and strengthens the case for Bitcoin. Second, former President Trump's positive mentions of crypto and the potential to bring platforms like Hyperliquid compliantly into the United States. Third, the SEC signaling a more progressive regulatory pathway for launching new crypto assets.
+
+Hougan dives deep into the concept of consensus versus non-consensus investing. While major trends like AI, robotics, and biotech are widely accepted (consensus) areas of growth, crypto remains highly non-consensus among the traditional institutions that control the majority of global capital. He identifies Hyperliquid as a prime example of a 'consensus non-consensus' bet—virtually everyone in the crypto-native space understands its superior user experience and financial efficiency, yet traditional finance allocators have zero exposure or awareness. Bringing Hyperliquid into the U.S. regulatory fold is a multi-year effort requiring CFTC clarity on perpetual futures, but the upside remains massive as perpetual contracts begin to eat the market share of traditional, calendar-dated futures.
+
+The conversation also covers the rise of tokenized real-world assets (RWAs) and stocks on-chain. Hougan praises Robin Hood's on-chain strategy, noting that its success stemmed from bringing an established brand, an active user base, and a willingness to integrate directly with open DeFi protocols rather than walling off services. Looking forward, Hougan expresses immense optimism for the next two decades of technology, citing advancements in cancer vaccines, robotics, and on-chain finance. He concludes with Bitwise's strategic pivot towards native on-chain asset management, including staking, vaults, and tokenized security products, to meet investors where the financial system is ultimately heading.
+
+## Chapters
+
+### `00:32` — The Crypto Market Rebound
+
+Matt Hougan joins the show to discuss the sudden shift from a dormant bare market to a rapidly growing, highly active crypto ecosystem.
+
+### `01:59` — A Three-Part Catalyst Spark
+
+Hougan explains how a combination of Treasury bond interventions, pro-crypto political statements, and SEC regulatory shifts acted as the perfect spark for the market.
+
+### `05:01` — Treasury Interventions and Macro Trends
+
+An in-depth look at how government manipulation of long-term bond rates devalues the dollar and creates a highly bullish environment for Bitcoin.
+
+### `09:24` — Consensus vs. Non-Consensus Bets
+
+Hougan details why investors must look for right but non-consensus opportunities, emphasizing that crypto is still ignored by the gatekeepers of major capital.
+
+### `12:21` — The Hyperliquid Opportunity
+
+A deep dive into Hyperliquid's potential regulatory journey into the United States, its strong institutional team, and why it is a generational product.
+
+### `18:43` — Perps vs. Legacy Futures
+
+Matt analyzes how decentralized perp protocols will disrupt traditional calendar-dated futures and challenge legacy stock trading venues.
+
+### `25:50` — Stocks and Assets On-Chain
+
+Evaluating the rise of tokenized equities, why Robin Hood's open DeFi integration succeeded, and how Bitwise is positioning its upcoming on-chain products.
+
+### `32:03` — The Next 20 Years of Tech
+
+Hougan shares his excitement for structural human advancements in biotech, robotics, and crypto, mapping out a highly optimistic view of the future.
+
+## Notable Quotes
+
+> "Anytime the government is mucking with the money, that is good for Bitcoin."
+> — `07:46`
+
+> "In order to make money in the market, you have to be right and non-consensus."
+> — `11:33`
+
+> "The beautiful thing about crypto right now is I'm pretty sure it's right... but it's strongly non-consensus."
+> — `11:49`
+
+> "The real innovation here is perps versus calendar-dated futures."
+> — `24:37`
