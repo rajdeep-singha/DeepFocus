@@ -7,11 +7,15 @@ category: "Engineering"
 tags: [tag1, tag2, tag3]
 estimated_read_time: 10
 is_own_work: true
-# gists are optional — run: npm run gists -- content/articles/this-file.qmd
+# gists/diagrams are optional — run: npm run gists -- content/articles/this-file.qmd
 # gists:
 #   quick: ""
 #   medium: ""
 #   full: ""
+# diagrams:
+#   - title: ""
+#     caption: ""
+#     mermaid: ""
 ---
 
 Write your article content here in standard Markdown.
