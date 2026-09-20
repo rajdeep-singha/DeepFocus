@@ -129,6 +129,10 @@ Writes `gists.quick` (~150 words), `gists.medium` (~600 words), `gists.full` (~1
 npm run video -- https://youtube.com/watch?v=VIDEO_ID
 ```
 
+```bash
+npm run gists --  --gemini "content/articles/the-anatomy-of-a-distributed-system.qmd"
+```
+
 Fetches metadata + transcript, creates `content/videos/{slug}.qmd` with gists in one API call.
 
 ### Add an external article
