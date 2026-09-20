@@ -37,6 +37,11 @@ interface ContentMeta {
     short?: string
     long?: string
   }
+  diagrams?: {
+    title: string
+    caption?: string
+    mermaid: string
+  }[]
 }
 
 interface ContentItem extends ContentMeta {
@@ -66,6 +71,21 @@ function makeExcerpt(body: string, maxLen = 200): string {
     .replace(/\n/g, ' ')
     .trim()
   return plain.length > maxLen ? plain.slice(0, maxLen).trimEnd() + '…' : plain
+}
+
+function normalizeDiagrams(raw: unknown): ContentMeta['diagrams'] {
+  if (!Array.isArray(raw)) return undefined
+  const diagrams: NonNullable<ContentMeta['diagrams']> = []
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue
+    const obj = item as Record<string, unknown>
+    const mermaid = typeof obj['mermaid'] === 'string' ? obj['mermaid'].trim() : ''
+    const title = typeof obj['title'] === 'string' ? obj['title'].trim() : ''
+    if (!mermaid || !title) continue
+    const caption = typeof obj['caption'] === 'string' ? obj['caption'].trim() : ''
+    diagrams.push(caption ? { title, caption, mermaid } : { title, mermaid })
+  }
+  return diagrams.length ? diagrams : undefined
 }
 
 function estimateReadTime(body: string): number {
@@ -129,6 +149,7 @@ async function processFile(filePath: string): Promise<{ meta: ContentMeta; item:
     is_own_work: (data['is_own_work'] as boolean) ?? true,
     excerpt,
     gists: renderedGists,
+    diagrams: normalizeDiagrams(data['diagrams']),
   }
 
   const item: ContentItem = { ...meta, body: bodyHtml }
