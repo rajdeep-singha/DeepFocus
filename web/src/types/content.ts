@@ -10,6 +10,12 @@ export interface Gists {
   long?: string
 }
 
+export interface Diagram {
+  title: string
+  caption?: string
+  mermaid: string
+}
+
 export interface ContentMeta {
   slug: string
   title: string
@@ -25,6 +31,7 @@ export interface ContentMeta {
   is_own_work: boolean
   excerpt: string           // first 200 chars of body, for card preview
   gists?: Gists
+  diagrams?: Diagram[]
 }
 
 export interface ContentItem extends ContentMeta {

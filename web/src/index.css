@@ -91,3 +91,10 @@
     @apply rounded-xl border border-stone-200 my-6 mx-auto max-w-full;
   }
 }
+
+.mermaid-svg svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}

@@ -96,7 +96,9 @@ export default function Article() {
         )}
       </header>
 
-      {item.gists && <GistPanel gists={item.gists} />}
+      {(item.gists || (item.diagrams && item.diagrams.length > 0)) && (
+        <GistPanel gists={item.gists ?? {}} diagrams={item.diagrams} />
+      )}
 
       {item.type === 'video' && item.video_url && (
         <VideoEmbed url={item.video_url} title={item.title} />
