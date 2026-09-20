@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { generateText, resolveProvider } from './llm.js'
+import { DIAGRAM_JSON_FIELD, DIAGRAM_RULES, normalizeDiagrams } from './diagrams.js'
 
 const filePath = process.argv.slice(2).find((a) => !a.startsWith('--'))
 
@@ -49,18 +50,21 @@ ${contentSection}
 Return ONLY valid JSON with this exact structure:
 {
   "short": "<~150 word takeaway — single paragraph, the single most important insight>",
-  "long": "<complete explanation of the entire video content — cover every major point, argument, example, and conclusion the speaker makes. Use \\n\\n between paragraphs. Aim for thoroughness over brevity.>"
+  "long": "<complete explanation of the entire video content — cover every major point, argument, example, and conclusion the speaker makes. Use \\n\\n between paragraphs. Aim for thoroughness over brevity.>",
+  ${DIAGRAM_JSON_FIELD}
 }
+
+${DIAGRAM_RULES}
 
 Return only the JSON, no other text.`
 
-  const text = await generateText(prompt, { maxTokens: 4096 })
+  const text = await generateText(prompt, { maxTokens: 6000 })
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
-  const gists = JSON.parse(jsonMatch[0]) as { short: string; long: string }
-  if (!gists.short || !gists.long) throw new Error('Missing gist fields in model response')
-  return gists
+  const parsed = JSON.parse(jsonMatch[0]) as { short: string; long: string; diagrams?: unknown }
+  if (!parsed.short || !parsed.long) throw new Error('Missing gist fields in model response')
+  return { short: parsed.short, long: parsed.long, diagrams: normalizeDiagrams(parsed.diagrams) }
 }
 
 async function generateTextGists(title: string, body: string) {
@@ -72,8 +76,11 @@ Generate THREE summaries at different levels of depth. Return ONLY valid JSON wi
 {
   "quick": "<~150 word summary — single paragraph, the single most important takeaway>",
   "medium": "<~600 word summary — key points and context, use \\n\\n between paragraphs>",
-  "full": "<~1500 word summary — comprehensive overview covering main arguments, evidence, and implications, use \\n\\n between paragraphs>"
+  "full": "<~1500 word summary — comprehensive overview covering main arguments, evidence, and implications, use \\n\\n between paragraphs>",
+  ${DIAGRAM_JSON_FIELD}
 }
+
+${DIAGRAM_RULES}
 
 The content to summarize:
 ---
@@ -82,13 +89,23 @@ ${body.slice(0, 12000)}
 
 Return only the JSON object, no other text.`
 
-  const text = await generateText(prompt, { maxTokens: 4096 })
+  const text = await generateText(prompt, { maxTokens: 6000 })
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
-  const gists = JSON.parse(jsonMatch[0]) as { quick: string; medium: string; full: string }
-  if (!gists.quick || !gists.medium || !gists.full) throw new Error('Missing gist fields in model response')
-  return gists
+  const parsed = JSON.parse(jsonMatch[0]) as {
+    quick: string
+    medium: string
+    full: string
+    diagrams?: unknown
+  }
+  if (!parsed.quick || !parsed.medium || !parsed.full) throw new Error('Missing gist fields in model response')
+  return {
+    quick: parsed.quick,
+    medium: parsed.medium,
+    full: parsed.full,
+    diagrams: normalizeDiagrams(parsed.diagrams),
+  }
 }
 
 async function main() {
@@ -111,8 +128,10 @@ async function main() {
     }
 
     console.log(`Generating video gists for: "${title}"`)
-    const gists = await generateVideoGists(title, author, transcript)
+    const { diagrams, ...gists } = await generateVideoGists(title, author, transcript)
     data['gists'] = gists
+    if (diagrams.length) data['diagrams'] = diagrams
+    else delete data['diagrams']
 
     const updated = matter.stringify(content, data)
     fs.writeFileSync(absPath, updated, 'utf-8')
@@ -120,10 +139,13 @@ async function main() {
     console.log('Gists written to frontmatter:')
     console.log(`  short: ${gists.short.slice(0, 80)}...`)
     console.log(`  long: ${gists.long.slice(0, 80)}...`)
+    console.log(`  diagrams: ${diagrams.length}`)
   } else {
     console.log(`Generating gists for: "${title}"`)
-    const gists = await generateTextGists(title, content)
+    const { diagrams, ...gists } = await generateTextGists(title, content)
     data['gists'] = gists
+    if (diagrams.length) data['diagrams'] = diagrams
+    else delete data['diagrams']
 
     const updated = matter.stringify(content, data)
     fs.writeFileSync(absPath, updated, 'utf-8')
@@ -132,6 +154,7 @@ async function main() {
     console.log(`  quick: ${gists.quick.slice(0, 80)}...`)
     console.log(`  medium: ${gists.medium.slice(0, 80)}...`)
     console.log(`  full: ${gists.full.slice(0, 80)}...`)
+    console.log(`  diagrams: ${diagrams.length}`)
   }
 
   console.log(`\nUpdated: ${absPath}`)

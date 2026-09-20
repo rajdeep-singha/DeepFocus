@@ -16,6 +16,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import slugify from 'slugify'
 import { generateText, resolveProvider } from './llm.js'
+import { DIAGRAM_JSON_FIELD, DIAGRAM_RULES, diagramsToYamlLines, normalizeDiagrams, type Diagram } from './diagrams.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -84,6 +85,7 @@ interface ClaudeArticleAnalysis {
     medium: string
     full: string
   }
+  diagrams?: Diagram[]
 }
 
 async function analyzeContent(url: string, pageText: string): Promise<ClaudeArticleAnalysis> {
@@ -109,8 +111,11 @@ Return ONLY valid JSON with this exact structure:
     "quick": "<~150 word single paragraph — the single most important takeaway>",
     "medium": "<~600 word summary — key points and context, \\n\\n between paragraphs>",
     "full": "<~1500 word comprehensive overview, \\n\\n between paragraphs>"
-  }
+  },
+  ${DIAGRAM_JSON_FIELD}
 }
+
+${DIAGRAM_RULES}
 
 Return only the JSON object, no other text.`
 
@@ -118,7 +123,9 @@ Return only the JSON object, no other text.`
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
-  return JSON.parse(jsonMatch[0]) as ClaudeArticleAnalysis
+  const parsed = JSON.parse(jsonMatch[0]) as ClaudeArticleAnalysis
+  parsed.diagrams = normalizeDiagrams(parsed.diagrams)
+  return parsed
 }
 
 function buildQmdContent(analysis: ClaudeArticleAnalysis, sourceUrl: string): string {
@@ -140,6 +147,7 @@ function buildQmdContent(analysis: ClaudeArticleAnalysis, sourceUrl: string): st
   lines.push(`  quick: ${JSON.stringify(analysis.gists.quick)}`)
   lines.push(`  medium: ${JSON.stringify(analysis.gists.medium)}`)
   lines.push(`  full: ${JSON.stringify(analysis.gists.full)}`)
+  lines.push(...diagramsToYamlLines(analysis.diagrams ?? []))
   lines.push('---')
   lines.push('')
   lines.push(analysis.body_markdown)
@@ -180,6 +188,7 @@ async function main() {
   console.log(`  Type: ${contentType}`)
   console.log(`  Category: ${analysis.category}`)
   console.log(`  Tags: ${analysis.tags.join(', ')}`)
+  console.log(`  Diagrams: ${(analysis.diagrams ?? []).length}`)
   console.log('\nRun "npm run build:content" to include it in the site.')
 }
 

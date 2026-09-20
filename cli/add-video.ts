@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import slugify from 'slugify'
 import { generateText, resolveProvider } from './llm.js'
+import { DIAGRAM_JSON_FIELD, DIAGRAM_RULES, diagramsToYamlLines, normalizeDiagrams, type Diagram } from './diagrams.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -112,6 +113,7 @@ interface ClaudeVideoAnalysis {
     chapters: Chapter[]
     quotes: Quote[]
   }
+  diagrams?: Diagram[]
 }
 
 async function analyzeVideo(
@@ -151,11 +153,14 @@ Return ONLY valid JSON with this exact structure:
         "timestamp": "<MM:SS where this was said>"
       }
     ]
-  }
+  },
+  ${DIAGRAM_JSON_FIELD}
 }
 
 For chapters: identify 4-8 natural topic shifts in the video using the timestamps in the transcript. Each chapter should cover a distinct concept or section.
 For quotes: pick 3-5 of the most insightful, quotable lines the speaker actually said.
+
+${DIAGRAM_RULES}
 
 Return only the JSON, no other text.`
 
@@ -163,7 +168,9 @@ Return only the JSON, no other text.`
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Model did not return valid JSON')
 
-  return JSON.parse(jsonMatch[0]) as ClaudeVideoAnalysis
+  const parsed = JSON.parse(jsonMatch[0]) as ClaudeVideoAnalysis
+  parsed.diagrams = normalizeDiagrams(parsed.diagrams)
+  return parsed
 }
 
 function buildQmdContent(
@@ -189,6 +196,7 @@ function buildQmdContent(
   lines.push(`gists:`)
   lines.push(`  short: ${JSON.stringify(analysis.gists.short)}`)
   lines.push(`  long: ${JSON.stringify(analysis.gists.long)}`)
+  lines.push(...diagramsToYamlLines(analysis.diagrams ?? []))
   lines.push('---')
   lines.push('')
 
@@ -270,6 +278,7 @@ async function main() {
   console.log(`\nCreated: content/videos/${filename}`)
   console.log(`  Category: ${analysis.category}`)
   console.log(`  Tags: ${analysis.tags.join(', ')}`)
+  console.log(`  Diagrams: ${(analysis.diagrams ?? []).length}`)
   console.log('\nRun "npm run build:content" to include it in the site.')
 }
 
