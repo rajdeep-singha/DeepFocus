@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import { generateText, resolveProvider } from './llm.js'
+import { generateText, parseModelJson, resolveProvider } from './llm.js'
 import { DIAGRAM_JSON_FIELD, DIAGRAM_RULES, normalizeDiagrams } from './diagrams.js'
 
 const filePath = process.argv.slice(2).find((a) => !a.startsWith('--'))
@@ -58,11 +58,8 @@ ${DIAGRAM_RULES}
 
 Return only the JSON, no other text.`
 
-  const text = await generateText(prompt, { maxTokens: 6000 })
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Model did not return valid JSON')
-
-  const parsed = JSON.parse(jsonMatch[0]) as { short: string; long: string; diagrams?: unknown }
+  const text = await generateText(prompt, { maxTokens: 6000, json: true })
+  const parsed = parseModelJson(text) as { short: string; long: string; diagrams?: unknown }
   if (!parsed.short || !parsed.long) throw new Error('Missing gist fields in model response')
   return { short: parsed.short, long: parsed.long, diagrams: normalizeDiagrams(parsed.diagrams) }
 }
@@ -89,11 +86,8 @@ ${body.slice(0, 12000)}
 
 Return only the JSON object, no other text.`
 
-  const text = await generateText(prompt, { maxTokens: 6000 })
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Model did not return valid JSON')
-
-  const parsed = JSON.parse(jsonMatch[0]) as {
+  const text = await generateText(prompt, { maxTokens: 6000, json: true })
+  const parsed = parseModelJson(text) as {
     quick: string
     medium: string
     full: string

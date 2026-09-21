@@ -4,14 +4,14 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import slugify from 'slugify'
-import { generateText, resolveProvider } from './llm.js'
+import { generateText, parseModelJson, resolveProvider } from './llm.js'
 import { DIAGRAM_JSON_FIELD, DIAGRAM_RULES, diagramsToYamlLines, normalizeDiagrams, type Diagram } from './diagrams.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const VIDEOS_DIR = path.join(ROOT, 'content', 'videos')
 
-const inputUrl = process.argv.slice(2).find((a) => !a.startsWith('--'))
+const inputUrl = process.argv.slice(2).find((a) => !a.startsWith('--'))?.trim()
 
 if (!inputUrl) {
   console.error('Usage: npm run video -- [--gemini] <YouTube URL>')
@@ -164,13 +164,43 @@ ${DIAGRAM_RULES}
 
 Return only the JSON, no other text.`
 
-  const text = await generateText(prompt, { maxTokens: 8192 })
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Model did not return valid JSON')
+  const text = await generateText(prompt, { maxTokens: 8192, json: true })
+  return normalizeVideoAnalysis(parseModelJson(text))
+}
 
-  const parsed = JSON.parse(jsonMatch[0]) as ClaudeVideoAnalysis
-  parsed.diagrams = normalizeDiagrams(parsed.diagrams)
-  return parsed
+function asObject(raw: unknown): Record<string, unknown> {
+  return raw && typeof raw === 'object' && !Array.isArray(raw)
+    ? (raw as Record<string, unknown>)
+    : {}
+}
+
+function asArray<T>(raw: unknown): T[] {
+  return Array.isArray(raw) ? (raw as T[]) : []
+}
+
+function normalizeVideoAnalysis(raw: unknown): ClaudeVideoAnalysis {
+  const obj = asObject(raw)
+  const gistsRaw = asObject(obj['gists'])
+  const short = typeof gistsRaw['short'] === 'string' ? gistsRaw['short'] : ''
+  const long = typeof gistsRaw['long'] === 'string' ? gistsRaw['long'] : ''
+  if (!short || !long) throw new Error('Missing gist fields in model response')
+
+  const chapters = asArray<Chapter>(gistsRaw['chapters'] ?? obj['chapters']).filter(
+    (c) => c && typeof c === 'object' && typeof c.title === 'string',
+  )
+  const quotes = asArray<Quote>(gistsRaw['quotes'] ?? obj['quotes']).filter(
+    (q) => q && typeof q === 'object' && typeof q.text === 'string',
+  )
+  const tags = asArray<unknown>(obj['tags']).filter((t): t is string => typeof t === 'string')
+
+  return {
+    category: typeof obj['category'] === 'string' ? obj['category'] : 'General',
+    tags,
+    estimated_read_time: Number(obj['estimated_read_time']) || 8,
+    description: typeof obj['description'] === 'string' ? obj['description'] : '',
+    gists: { short, long, chapters, quotes },
+    diagrams: normalizeDiagrams(obj['diagrams'] ?? gistsRaw['diagrams']),
+  }
 }
 
 function buildQmdContent(
@@ -211,13 +241,15 @@ function buildQmdContent(
   lines.push('')
 
   // Chapters
-  lines.push('## Chapters')
-  lines.push('')
-  for (const chapter of analysis.gists.chapters) {
-    lines.push(`### \`${chapter.timestamp}\` — ${chapter.title}`)
+  if (analysis.gists.chapters.length > 0) {
+    lines.push('## Chapters')
     lines.push('')
-    lines.push(chapter.summary)
-    lines.push('')
+    for (const chapter of analysis.gists.chapters) {
+      lines.push(`### \`${chapter.timestamp}\` — ${chapter.title}`)
+      lines.push('')
+      lines.push(chapter.summary)
+      lines.push('')
+    }
   }
 
   // Quotes

@@ -15,7 +15,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import slugify from 'slugify'
-import { generateText, resolveProvider } from './llm.js'
+import { generateText, parseModelJson, resolveProvider } from './llm.js'
 import { DIAGRAM_JSON_FIELD, DIAGRAM_RULES, diagramsToYamlLines, normalizeDiagrams, type Diagram } from './diagrams.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -119,11 +119,8 @@ ${DIAGRAM_RULES}
 
 Return only the JSON object, no other text.`
 
-  const text = await generateText(prompt, { maxTokens: 6000 })
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Model did not return valid JSON')
-
-  const parsed = JSON.parse(jsonMatch[0]) as ClaudeArticleAnalysis
+  const text = await generateText(prompt, { maxTokens: 6000, json: true })
+  const parsed = parseModelJson(text) as ClaudeArticleAnalysis
   parsed.diagrams = normalizeDiagrams(parsed.diagrams)
   return parsed
 }

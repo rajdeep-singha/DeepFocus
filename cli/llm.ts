@@ -18,13 +18,23 @@ export function resolveProvider(argv: string[] = process.argv): Provider {
 /** Send a single user prompt and return the model's text response. */
 export async function generateText(
   prompt: string,
-  opts: { maxTokens?: number; provider?: Provider } = {},
+  opts: { maxTokens?: number; provider?: Provider; json?: boolean } = {},
 ): Promise<string> {
   const provider = opts.provider ?? resolveProvider()
   const maxTokens = opts.maxTokens ?? 4096
   return provider === 'gemini'
-    ? generateWithGemini(prompt, maxTokens)
+    ? generateWithGemini(prompt, maxTokens, opts.json === true)
     : generateWithClaude(prompt, maxTokens)
+}
+
+/** Parse a JSON object out of a model reply (fences, leading/trailing prose). */
+export function parseModelJson(text: string): unknown {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  const candidate = (fenced?.[1] ?? text).trim()
+  const start = candidate.indexOf('{')
+  const end = candidate.lastIndexOf('}')
+  if (start < 0 || end <= start) throw new Error('Model did not return valid JSON')
+  return JSON.parse(candidate.slice(start, end + 1))
 }
 
 async function generateWithClaude(prompt: string, maxTokens: number): Promise<string> {
@@ -40,7 +50,7 @@ async function generateWithClaude(prompt: string, maxTokens: number): Promise<st
   return message.content[0]?.type === 'text' ? message.content[0].text : ''
 }
 
-async function generateWithGemini(prompt: string, maxTokens: number): Promise<string> {
+async function generateWithGemini(prompt: string, maxTokens: number, json: boolean): Promise<string> {
   const apiKey = process.env['GEMINI_API_KEY'] ?? process.env['GOOGLE_API_KEY']
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set')
 
@@ -49,7 +59,10 @@ async function generateWithGemini(prompt: string, maxTokens: number): Promise<st
   const response = await ai.models.generateContent({
     model: GEMINI_MODEL,
     contents: prompt,
-    config: { maxOutputTokens: maxTokens },
+    config: {
+      maxOutputTokens: maxTokens,
+      ...(json ? { responseMimeType: 'application/json' } : {}),
+    },
   })
   return response.text ?? ''
 }
