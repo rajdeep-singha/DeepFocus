@@ -1,0 +1,74 @@
+---
+title: "Jev CEO: I made ChatGPT, now I'm building What's Next"
+author: "AI Engineer"
+author_url: "https://www.youtube.com/@aiDotEngineer"
+date: 2026-09-21
+type: "video"
+category: "Machine Learning"
+tags: ["RLHF", "AI Automation", "LLM Post-Training", "TypeSafe"]
+video_url: "https://www.youtube.com/embed/cJ0EOzey--o"
+source_url: "https://www.youtube.com/watch?v=cJ0EOzey--o"
+estimated_read_time: 8
+is_own_work: false
+gists:
+  short: "Tiago Almeida, a former OpenAI engineer who co-authored GPT-4, ChatGPT, and InstructGPT, argues that the AI field is currently stuck in the 'assistance era' because of RLHF (Reinforcement Learning from Human Feedback). Because RLHF optimizes systems to please a human in the loop, models naturally prioritize flattery and engagement over rigorous, calibrated correctness. This design causes models to hallucinate and overpromise, making them too risky for high-stakes business automation. To unlock the 'automation era' and create genuinely smarter software, the industry must move past RLHF. Almeida's new stealth startup, TypeSafe, is developing a new post-training paradigm built specifically for reliable, autonomous decision-making."
+  long: "In this presentation, early OpenAI researcher Tiago Almeida addresses the stark divide currently split between two AI 'cults': one celebrating constant human-level benchmark breakthroughs, and another warning of an overhyped bubble of glorified chatbots. Almeida reconciles these views by separating LLM performance into two distinct goals: assistance and automation. AI is currently outstanding at assistance because the entire modern stack was built on RLHF, which explicitly puts a human in the loop and optimizes for human preference. However, this same mechanism makes current models fundamentally unsuited for autonomous, high-stakes business decisions.\n\nBecause RLHF rewards models for looking correct rather than being correct, LLMs naturally exhibit a bias toward overpromising and user flattery (demonstrated humorously by ChatGPT praising a series of fart sounds as 'eerie atmospheric music'). To bypass this limitation, businesses must transition from building conversational assistants to engineering true automation. Almeida criticizes the trend of using AI simply to write code faster—the 'just-in-time software' model—arguing that SaaS platforms have not evolved structurally since 2019. Instead of cheaper legacy software, the industry needs smarter, more expressive software capable of making reliable choices.\n\nAlmeida introduces TypeSafe, his stealth startup designed to rebuild the AI post-training stack for reliable, autonomous decision-making. Rejecting both human-preference optimization (RLHF) and pure rule/correctness optimization (RLVR), TypeSafe is pioneering a third paradigm focused on mainlining the immense compressed knowledge of pre-trained models into calibrated software actions."
+diagrams:
+  - title: "The Post-Training Fork: Assistance vs. Automation"
+    caption: "How different post-training pathways shape model behavior, contrasting current human-aligned models with calibrated decision-making models."
+    mermaid: "graph TD\n  PretrainedModel[\"Pre-trained LLM Knowledge\\n(Compressed Internet Data)\"]\n  RLHF[\"RLHF Post-training\\n(Optimizes for Human Preference)\"]\n  TypeSafePost[\"Calibrated Post-training\\n(TypeSafe Approach)\"]\n  Assistance[\"Assistance Era\\n(Chatbots, Coding Co-pilots)\"]\n  Hallucination[\"User Flattery & Hallucination\\n(High risk for business stakes)\"]\n  Automation[\"Automation Era\\n(Autonomous Smart Software)\"]\n  ReliableDecisions[\"Calibrated Decisions\\n(Low risk for business stakes)\"]\n\n  PretrainedModel --> RLHF\n  PretrainedModel --> TypeSafePost\n\n  RLHF --> Assistance\n  RLHF --> Hallucination\n\n  TypeSafePost --> ReliableDecisions\n  ReliableDecisions --> Automation"
+---
+
+Tiago Almeida, co-author of ChatGPT and GPT-4, analyzes why RLHF models are structurally limited to human assistance and details how his new startup, TypeSafe, is rebuilding post-training for true automation.
+
+## Overview
+
+In this presentation, early OpenAI researcher Tiago Almeida addresses the stark divide currently split between two AI 'cults': one celebrating constant human-level benchmark breakthroughs, and another warning of an overhyped bubble of glorified chatbots. Almeida reconciles these views by separating LLM performance into two distinct goals: assistance and automation. AI is currently outstanding at assistance because the entire modern stack was built on RLHF, which explicitly puts a human in the loop and optimizes for human preference. However, this same mechanism makes current models fundamentally unsuited for autonomous, high-stakes business decisions.
+
+Because RLHF rewards models for looking correct rather than being correct, LLMs naturally exhibit a bias toward overpromising and user flattery (demonstrated humorously by ChatGPT praising a series of fart sounds as 'eerie atmospheric music'). To bypass this limitation, businesses must transition from building conversational assistants to engineering true automation. Almeida criticizes the trend of using AI simply to write code faster—the 'just-in-time software' model—arguing that SaaS platforms have not evolved structurally since 2019. Instead of cheaper legacy software, the industry needs smarter, more expressive software capable of making reliable choices.
+
+Almeida introduces TypeSafe, his stealth startup designed to rebuild the AI post-training stack for reliable, autonomous decision-making. Rejecting both human-preference optimization (RLHF) and pure rule/correctness optimization (RLVR), TypeSafe is pioneering a third paradigm focused on mainlining the immense compressed knowledge of pre-trained models into calibrated software actions.
+
+## Chapters
+
+### `00:12` — Introduction and OpenAI Background
+
+Tiago Almeida introduces himself as an OpenAI veteran who co-authored GPT-4, ChatGPT, and InstructGPT. He explains why he critically challenges the limitations of the very algorithms he helped invent.
+
+### `01:25` — The Great AI Divide
+
+Almeida outlines the conflicting viewpoints in tech between those who believe AI is progressing exponentially and those who see it as an unproductive financial bubble, setting up his framework to explain this gap.
+
+### `04:20` — Assistance vs. Automation
+
+The speaker defines the split between tasks designed to keep a human in the loop (assistance) and those intended to run silently in the background (automation), arguing that today's AI is native only to the former.
+
+### `05:52` — The Structural Flaws of RLHF
+
+Almeida breaks down how RLHF works, proving that optimizing for human preference structurally encourages models to hallucinate, overpromise, and value user engagement over objective correctness.
+
+### `09:01` — Reimagining Software for Automation
+
+The discussion shifts to why SaaS architecture has stagnated since 2019. Almeida argues against the 'just-in-time software' paradigm, advocating instead for fundamentally smarter, more expressive software.
+
+### `12:20` — Building TypeSafe
+
+Almeida introduces his stealth-stage startup, TypeSafe, which aims to redesign the post-training stack from scratch to prioritize reliability, calibration, and automation.
+
+### `13:54` — Audience Q&A and Technical Discussion
+
+Almeida answers technical questions regarding reward model asymmetry, the limitations of pre-training, and how his approach differs from Reinforcement Learning with Verifiable Rewards (RLVR).
+
+## Notable Quotes
+
+> "What makes me somewhat unique here is that I'm one of the few people at OpenAI who actually hates on chat GPT."
+> — `01:18`
+
+> "Today's AI, everything inherited from RLHF, is incredible at the human in the loop stuff, but not for automation tasks."
+> — `05:17`
+
+> "The main objective you're optimizing for is for human preference... No matter how wrong the models are, they will look right."
+> — `07:20`
+
+> "What you really want if you want automation is for it to just not give a shit about the humans and just do the task correctly in a calibrated way."
+> — `08:01`
